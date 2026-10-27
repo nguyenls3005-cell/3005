@@ -334,13 +334,10 @@ struct LegacyRepositorySourcesView: View {
 
 struct RepositoryPackageDetailView: View {
     @Environment(\.appLanguage) private var language
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var repositoryStore: PackageRepositoryStore
     @EnvironmentObject private var patchStore: PatchProjectStore
-    @State private var isSupportedOSExpanded = false
 
     let record: RepositoryPackageRecord
-    private static let informationSectionID = "repository-package-information"
 
     private var compatibility: PackageCompatibility {
         PackageCompatibilityEvaluator.evaluate(
@@ -363,416 +360,99 @@ struct RepositoryPackageDetailView: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 24) {
-                    headerSection
-                    if let bannerURL = record.package.bannerURL {
-                        bannerSection(url: bannerURL)
-                    }
-                    descriptionSection
-                    if let changelog = record.package.changelog {
-                        detailBlock(titleKey: "repository.changelog") {
-                            Text(changelog)
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
-                                .textSelection(.enabled)
+        List {
+            Section {
+                HStack(alignment: .top, spacing: 14) {
+                    RepositoryPackageIcon(package: record.package, size: 56)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(record.package.name)
+                            .font(.headline)
+                        
+                        Text(record.package.author)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        
+                        Text("Phiên bản \(record.package.version) · \(record.sourceName)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        if compatibility == .compatible {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Tương thích với thiết bị này")
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                            .padding(.top, 2)
                         }
                     }
-                    informationSection
-                        .id(Self.informationSectionID)
+                    
+                    Spacer(minLength: 8)
+                    
+                    compactInstallButton
                 }
-                .frame(maxWidth: 720)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, AppTheme.contentCardInset)
-                .padding(.top, 16)
-                .padding(.bottom, 32)
+                .padding(.vertical, 6)
             }
-            .scrollIndicators(.hidden)
-            .background(Color(uiColor: .systemGroupedBackground))
-            .onAppear {
-                scrollToInformationIfNeeded(using: proxy)
+            
+            Section(header: Text("Mô tả").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
+                Text(record.package.details ?? record.package.summary)
+                    .font(.subheadline)
+                    .padding(.vertical, 4)
+            }
+            
+            if !record.package.screenshotURLs.isEmpty {
+                Section(header: Text("Ảnh xem trước").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(Array(record.package.screenshotURLs.enumerated()), id: \.offset) { index, screenshotURL in
+                                RepositoryScreenshotPreview(
+                                    url: screenshotURL,
+                                    accessibilityLabel: language.text("repository.preview_number", Int64(index + 1))
+                                )
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                }
+            }
+            
+            Section(header: Text("Thông tin gói").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
+                LabeledContent("Tác giả", value: record.package.author)
+                LabeledContent("Phiên bản", value: record.package.version)
+                if let category = record.package.category {
+                    LabeledContent("Danh mục", value: category)
+                }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle(record.package.name)
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func scrollToInformationIfNeeded(using proxy: ScrollViewProxy) {
-#if targetEnvironment(simulator)
-        guard ProcessInfo.processInfo.arguments.contains(
-            "--simulate-package-information"
-        ) else {
-            return
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            proxy.scrollTo(Self.informationSectionID, anchor: .top)
-        }
-#endif
-    }
-
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 14) {
-                    RepositoryPackageIcon(package: record.package, size: 80)
-                    packageIdentity
-                }
-            } else {
-                HStack(alignment: .top, spacing: 16) {
-                    RepositoryPackageIcon(package: record.package, size: 80)
-                    packageIdentity
-                    Spacer(minLength: 0)
-                }
-            }
-
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 8) {
-                    metadataBadge(
-                        record.package.version,
-                        systemImage: "tag.fill"
-                    )
-                    if record.package.isPrivate {
-                        metadataBadge(
-                            language.text("patch.private"),
-                            systemImage: "eye.slash.fill"
-                        )
-                    }
-                }
-            } else {
-                HStack(spacing: 8) {
-                    metadataBadge(
-                        record.package.version,
-                        systemImage: "tag.fill"
-                    )
-                    if record.package.isPrivate {
-                        metadataBadge(
-                            language.text("patch.private"),
-                            systemImage: "eye.slash.fill"
-                        )
-                    }
-                    Spacer(minLength: 0)
-                }
-            }
-
-            installButton
-        }
-        .padding(18)
-        .background(
-            Color(uiColor: .systemBackground),
-            in: RoundedRectangle(
-                cornerRadius: AppTheme.contentCardCornerRadius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            AppCardBorder()
-        }
-    }
-
-    private var packageIdentity: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(record.package.name)
-                .font(.title2.weight(.bold))
-                .fixedSize(horizontal: false, vertical: true)
-            Text(record.package.summary)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(language.text(
-                "repository.home_package_meta",
-                record.package.author,
-                record.sourceName
-            ))
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var descriptionSection: some View {
-        detailBlock(titleKey: "repository.description") {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(record.package.details ?? record.package.summary)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-
-                if !record.package.screenshotURLs.isEmpty {
-                    Divider()
-                    previewGallery
-                }
-            }
-        }
-    }
-
-    private var previewGallery: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 12) {
-                ForEach(
-                    Array(record.package.screenshotURLs.enumerated()),
-                    id: \.offset
-                ) { index, screenshotURL in
-                    RepositoryScreenshotPreview(
-                        url: screenshotURL,
-                        accessibilityLabel: language.text(
-                            "repository.preview_number",
-                            Int64(index + 1)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private var informationSection: some View {
-        detailBlock(titleKey: "repository.information") {
-            VStack(spacing: 0) {
-                detailRow(
-                    label: language.text("repository.version"),
-                    value: record.package.version
-                )
-                detailDivider()
-                detailRow(
-                    label: language.text("repository.source"),
-                    value: record.sourceName
-                )
-                detailDivider()
-                detailRow(
-                    label: language.text("patch.author"),
-                    value: record.package.author
-                )
-                if let category = record.package.category {
-                    detailDivider()
-                    detailRow(
-                        label: language.text("repository.category"),
-                        value: category
-                    )
-                }
-                detailDivider()
-                supportedOSDisclosure
-                if let publishedAt = record.package.publishedAt {
-                    detailDivider()
-                    detailRow(
-                        label: language.text("repository.published")
-                    ) {
-                        Text(publishedAt, style: .date)
-                    }
-                }
-                if record.package.isPrivate {
-                    detailDivider()
-                    detailRow(label: language.text("patch.privacy")) {
-                        Label(
-                            language.text("patch.private"),
-                            systemImage: "eye.slash.fill"
-                        )
-                        .foregroundStyle(AppTheme.accent)
-                    }
-                }
-            }
-        }
-    }
-
-    private var supportedOSDisclosure: some View {
-        DisclosureGroup(isExpanded: $isSupportedOSExpanded) {
-            supportedOSInformation
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 8)
-                .padding(.bottom, 4)
-        } label: {
-            Text(language.text("repository.supported_ios"))
-                .foregroundStyle(.secondary)
-        }
-        .font(.subheadline)
-        .padding(.vertical, 11)
-        .accessibilityHint(language.text("repository.supported_ios_hint"))
-    }
-
-    private var supportedOSInformation: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(record.package.supportedOS, id: \.self) { range in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(supportedOSTitle(for: range))
-                    if let builds = range.builds, !builds.isEmpty {
-                        Text(language.text(
-                            "repository.supported_builds",
-                            builds.joined(separator: ", ")
-                        ))
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-    }
-
-    private func supportedOSTitle(for range: PackageOSRange) -> String {
-        if range.minimum == range.maximum {
-            return language.text("repository.os_version", range.minimum)
-        }
-        return language.text(
-            "repository.os_range",
-            range.minimum,
-            range.maximum
-        )
-    }
-
-    private func bannerSection(url: URL) -> some View {
-        RepositoryRemoteImage(url: url, cornerRadius: 0)
-            .frame(maxWidth: .infinity)
-            .aspectRatio(16 / 7, contentMode: .fit)
-            .background(Color(uiColor: .secondarySystemBackground))
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: AppTheme.contentCardCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                AppCardBorder()
-            }
-    }
-
-    private func detailBlock<Content: View>(
-        titleKey: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            detailSectionHeader(titleKey)
-
-            content()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(AppTheme.contentCardPadding)
-                .background(
-                    Color(uiColor: .systemBackground),
-                    in: RoundedRectangle(
-                        cornerRadius: AppTheme.contentCardCornerRadius,
-                        style: .continuous
-                    )
-                )
-                .overlay {
-                    AppCardBorder()
-                }
-        }
-    }
-
-    private func detailRow<Content: View>(
-        label: String,
-        @ViewBuilder value: () -> Content
-    ) -> some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(label)
-                        .foregroundStyle(.secondary)
-                    value()
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            } else {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text(label)
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 16)
-                    value()
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.trailing)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        }
-        .font(.subheadline)
-        .padding(.vertical, 11)
-    }
-
-    private func detailRow(label: String, value: String) -> some View {
-        detailRow(label: label) {
-            Text(value)
-        }
-    }
-
-    private func detailDivider() -> some View {
-        Divider()
-    }
-
-    private var installButton: some View {
+    private var compactInstallButton: some View {
         Button {
             repositoryStore.install(record, using: patchStore)
         } label: {
             Group {
                 if repositoryStore.isDownloading(record) {
-                    elapsedDownloadLabel
+                    ProgressView().controlSize(.small).tint(.white)
                 } else if patchStore.isBusy {
-                    ProgressView()
-                        .controlSize(.small)
+                    ProgressView().controlSize(.small).tint(.white)
                 } else {
-                    Text(language.text(
-                        installButtonTitleKey
-                    ))
-                    .font(.subheadline.weight(.semibold))
+                    Text(isInstalled ? "Cập nhật" : "Cài đặt")
+                        .font(.subheadline.weight(.semibold))
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 32)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(compatibility == .compatible ? AppTheme.accent : Color.gray)
+            .clipShape(Capsule())
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.regular)
-        .disabled(
-            compatibility != .compatible
-                || repositoryStore.isDownloading(record)
-                || patchStore.isBusy
-        )
-        .accessibilityHint(language.text("repository.install_footer"))
-    }
-
-    private var elapsedDownloadLabel: some View {
-        let startedAt = repositoryStore.downloadStartedAt(for: record) ?? Date()
-        return TimelineView(.periodic(from: .now, by: 1)) { context in
-            HStack(spacing: 8) {
-                ProgressView()
-                    .controlSize(.small)
-                Text(language.text(
-                    "repository.downloading_elapsed",
-                    RepositoryDownloadDurationFormatter.string(
-                        elapsedSeconds: context.date.timeIntervalSince(startedAt)
-                    )
-                ))
-                .font(.subheadline.weight(.semibold))
-                .monospacedDigit()
-                .lineLimit(1)
-            }
-        }
-    }
-
-    private var installButtonTitleKey: String {
-        if isInstalled {
-            return "repository.update_package"
-        }
-        return record.package.kind == .wallpaper
-            ? "repository.download_package"
-            : "repository.install_package"
-    }
-
-    private func detailSectionHeader(_ key: String) -> some View {
-        Text(language.text(key))
-            .font(.title3.weight(.bold))
-            .foregroundStyle(.primary)
-            .textCase(nil)
-    }
-
-    private func metadataBadge(
-        _ text: String,
-        systemImage: String
-    ) -> some View {
-        Label(text, systemImage: systemImage)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color(uiColor: .secondarySystemFill), in: Capsule())
+        .buttonStyle(.plain)
+        .disabled(compatibility != .compatible || repositoryStore.isDownloading(record) || patchStore.isBusy)
     }
 }
 
