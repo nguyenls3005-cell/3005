@@ -96,49 +96,58 @@ struct LocalTweakListView: View {
     var body: some View {
         List {
             if title == "Tất cả gói" || title == "Dọn dẹp" || title == "Tính năng 3105" {
-                NavigationLink { LocalCleanerTweakView() } label: { TweakRow(title: "Dọn dẹp", desc: "Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.", icon: "sparkles") }
+                NavigationLink { LocalCleanerTweakView() } label: { TweakRow(title: "Dọn dẹp", desc: "Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.", icon: "sparkles", versionText: "3105 · Phiên bản 1.0.0") }
             }
             if title == "Tất cả gói" || title == "iOS 27" || title == "Tính năng 3105" {
-                NavigationLink { LocalSupervisedTweakView() } label: { TweakRow(title: "Chế độ giám sát", desc: "Bật hoặc tắt IsSupervised trên thiết bị iOS 27.", icon: "checkmark.shield.fill") }
-                NavigationLink { LocalFootnoteTweakView() } label: { TweakRow(title: "Chữ màn hình khóa", desc: "Thêm hoặc chỉnh sửa Footnote trên iOS 27.", icon: "text.bubble.fill") }
+                NavigationLink { LocalSupervisedTweakView() } label: { TweakRow(title: "Chế độ giám sát", desc: "Bật hoặc tắt IsSupervised trên thiết bị iOS 27.", icon: "checkmark.shield.fill", versionText: "3105 · Tính năng 3105") }
+                NavigationLink { LocalFootnoteTweakView() } label: { TweakRow(title: "Chữ màn hình khóa", desc: "Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.", icon: "text.bubble.fill", versionText: "3105 · Tính năng 3105") }
             }
         }.listStyle(.insetGrouped).navigationTitle(title).navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct TweakRow: View {
-    let title: String; let desc: String; let icon: String
+    let title: String; let desc: String; let icon: String; let versionText: String
     var body: some View {
         HStack(spacing: 12) {
             AppRowIcon(systemName: icon, frameSize: 34)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
                 Text(desc).font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                Text("3105 · Phiên bản 1.0.0").font(.caption2).foregroundStyle(.tertiary)
+                Text(versionText).font(.caption2).foregroundStyle(.tertiary) // Màu chữ xám mờ giống tab Tệp
             }
         }.padding(.vertical, 4)
     }
 }
 
-// --- CHI TIẾT CÁC TWEAK (CHỈ CÀI ĐẶT) ---
+// --- CHI TIẾT CÁC TWEAK TRONG REPO (GIAO DIỆN CHUẨN 100% ẢNH) ---
+
 struct LocalCleanerTweakView: View {
     @AppStorage("isCleanerInstalled") var isInstalled = false
     var body: some View {
         List {
             Section {
-                HStack(spacing: 12) {
-                    AppRowIcon(systemName: "sparkles", frameSize: 44)
-                    VStack(alignment: .leading) {
-                        Text("Dọn dẹp").font(.headline)
-                        Text("Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.").font(.caption).foregroundStyle(.secondary)
-                        Text("3105 · Phiên bản 1.0.0").font(.caption2).foregroundStyle(.tertiary)
+                HStack(alignment: .center, spacing: 16) {
+                    AppRowIcon(systemName: "sparkles", frameSize: 60)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Dọn dẹp").font(.title3.bold())
+                        Text("Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.").font(.subheadline).foregroundStyle(.secondary)
+                        Text("3105 · Phiên bản 1.0.0").font(.caption).foregroundStyle(.tertiary)
                     }
-                }
+                }.padding(.vertical, 8)
+                
                 Button { withAnimation { isInstalled = true } } label: {
-                    Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
-                }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
+                    Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
+                }.buttonStyle(.plain).disabled(isInstalled)
             }
-            Section("Thông tin gói") { LabeledContent("Loại", value: "Tính năng 3105"); LabeledContent("Tác giả", value: "3105") }
+            
+            Section(header: Text("Thông tin gói").font(.headline)) {
+                HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
+                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
+                HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
+                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
+                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
+            }
         }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -148,23 +157,30 @@ struct LocalSupervisedTweakView: View {
     var body: some View {
         List {
             Section {
-                HStack(alignment: .top, spacing: 12) {
-                    AppRowIcon(systemName: "checkmark.shield.fill", frameSize: 44)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Chế độ giám sát").font(.headline)
-                        Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.caption).foregroundStyle(.secondary)
+                HStack(alignment: .center, spacing: 16) {
+                    AppRowIcon(systemName: "checkmark.shield.fill", frameSize: 60)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Chế độ giám sát").font(.title3.bold())
+                        Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.subheadline).foregroundStyle(.secondary)
+                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.tertiary)
                     }
-                }
+                }.padding(.vertical, 8)
+                
                 Button { withAnimation { isInstalled = true } } label: {
-                    Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
-                }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
-            } footer: {
-                if isInstalled { Text("Tính năng đã được thêm vào tab Đã cài. Vui lòng chuyển sang tab Đã cài để thiết lập.") }
+                    Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
+                }.buttonStyle(.plain).disabled(isInstalled)
             }
-            Section("Thông tin gói") {
-                LabeledContent("Loại", value: "Tính năng 3105")
-                LabeledContent("iOS hỗ trợ", value: "iOS 27")
-                LabeledContent("File đích", value: "CloudConfigurationDetails.plist")
+            
+            Section(header: Text("Mô tả").font(.headline)) {
+                Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
+            }
+            
+            Section(header: Text("Thông tin gói").font(.headline)) {
+                HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
+                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
+                HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
+                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
+                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
             }
         }.navigationTitle("Chế độ giám sát").navigationBarTitleDisplayMode(.inline)
     }
@@ -175,23 +191,30 @@ struct LocalFootnoteTweakView: View {
     var body: some View {
         List {
             Section {
-                HStack(alignment: .top, spacing: 12) {
-                    AppRowIcon(systemName: "text.bubble.fill", frameSize: 44)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Chữ màn hình khóa").font(.headline)
-                        Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.caption).foregroundStyle(.secondary)
+                HStack(alignment: .center, spacing: 16) {
+                    AppRowIcon(systemName: "text.bubble.fill", frameSize: 60)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Chữ màn hình khóa").font(.title3.bold())
+                        Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.subheadline).foregroundStyle(.secondary)
+                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.tertiary)
                     }
-                }
+                }.padding(.vertical, 8)
+                
                 Button { withAnimation { isInstalled = true } } label: {
-                    Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
-                }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
-            } footer: {
-                if isInstalled { Text("Tính năng đã được thêm vào tab Đã cài. Vui lòng chuyển sang tab Đã cài để thiết lập.") }
+                    Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
+                }.buttonStyle(.plain).disabled(isInstalled)
             }
-            Section("Thông tin gói") {
-                LabeledContent("Loại", value: "Tính năng 3105")
-                LabeledContent("iOS hỗ trợ", value: "iOS 27")
-                LabeledContent("File đích", value: "Footnote.plist")
+            
+            Section(header: Text("Mô tả").font(.headline)) {
+                Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
+            }
+            
+            Section(header: Text("Thông tin gói").font(.headline)) {
+                HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
+                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
+                HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
+                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
+                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
             }
         }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
     }
