@@ -17,11 +17,15 @@ struct RepositorySourcesView: View {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
                             HStack(spacing: 12) {
-                                Image("anthumuc3105")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 34, height: 34)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.15))
+                                    Image("anthumuc3105")
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 34, height: 34)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                }
+                                .frame(width: 34, height: 34)
                                 
                                 Text("Tính năng 3105").font(.body.weight(.semibold)).foregroundStyle(.primary)
                             }.padding(.vertical, 4)
@@ -60,11 +64,15 @@ struct Local3105RepoView: View {
         List {
             Section {
                 HStack(alignment: .top, spacing: 14) {
-                    Image("anthumuc3105")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 42, height: 42)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.15))
+                        Image("anthumuc3105")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 42, height: 42)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                    .frame(width: 42, height: 42)
                     
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
@@ -139,12 +147,10 @@ struct LocalCleanerTweakView: View {
                         Text("3105 · Phiên bản 1.0.0").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
-                
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            
             Section(header: Text("Thông tin gói").font(.headline)) {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
@@ -169,16 +175,13 @@ struct LocalSupervisedTweakView: View {
                         Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
-                
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            
             Section(header: Text("Mô tả").font(.headline)) {
                 Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
             }
-            
             Section(header: Text("Thông tin gói").font(.headline)) {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
@@ -203,16 +206,13 @@ struct LocalFootnoteTweakView: View {
                         Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
-                
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            
             Section(header: Text("Mô tả").font(.headline)) {
                 Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
             }
-            
             Section(header: Text("Thông tin gói").font(.headline)) {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
