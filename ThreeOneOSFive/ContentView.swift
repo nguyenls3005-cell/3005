@@ -109,7 +109,7 @@ struct ContentView: View {
                     )
                 }
             }
-            .navigationTitle("3105")
+            .navigationTitle("3005")
             .navigationSplitViewColumnWidth(min: 210, ideal: 240, max: 300)
         } detail: {
             sectionContent(selectedVisibleSection)
@@ -233,7 +233,7 @@ private extension AppSection {
     var systemImage: String {
         switch self {
         case .home: return "house.fill"
-        case .new: return "clock.fill"
+        case .new: return "clock.arrow.circlepath" // ĐÃ ĐỔI ICON TẠI ĐÂY
         case .sources: return "shippingbox.fill"
         case .installed: return "tray.full.fill"
         case .files: return "folder.fill"
