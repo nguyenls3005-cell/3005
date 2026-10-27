@@ -1,11 +1,11 @@
-name: Build iOS App
+name: Build Unsigned IPA
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:   # Cho phép bấm chạy thủ công trên GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,29 +15,32 @@ jobs:
       - name: 1. Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: 2. Hiển thị phiên bản Xcode
-        run: xcodebuild -version
-
-      - name: 3. Liệt kê Scheme (để kiểm tra)
-        run: xcodebuild -list -project ThreeOneOSFive.xcodeproj
-
-      # Bước quan trọng: Build cho Simulator để kiểm tra code biên dịch thành công
-      - name: 4. Build cho iOS Simulator
+      - name: 2. Build Unsigned App (Release)
         run: |
           xcodebuild clean build \
             -project ThreeOneOSFive.xcodeproj \
             -scheme ThreeOneOSFive \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
-      # (Tùy chọn) Upload file .app nếu muốn tải về chạy thử
-      - name: 5. Upload App (Simulator)
-        if: success()
+      - name: 3. Đóng gói thành file .ipa (Unsigned)
+        run: |
+          # Tạo thư mục Payload và copy file .app vào
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/ThreeOneOSFive.app" "$RUNNER_TEMP/Payload/"
+          
+          # Nén thư mục Payload thành file .ipa
+          cd "$RUNNER_TEMP"
+          zip -qry "ThreeOneOSFive-unsigned.ipa" Payload
+
+      - name: 4. Upload file IPA (Unsigned)
         uses: actions/upload-artifact@v4
         with:
-          name: ThreeOneOSFive-simulator
-          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/ThreeOneOSFive.app
-          if-no-files-found: warn
+          name: ThreeOneOSFive-unsigned-ipa
+          path: ${{ runner.temp }}/ThreeOneOSFive-unsigned.ipa
+          if-no-files-found: error
