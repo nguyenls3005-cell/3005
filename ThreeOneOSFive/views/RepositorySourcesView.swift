@@ -5,9 +5,6 @@ struct RepositorySourcesView: View {
     @Environment(\.appLanguage) private var language
     @EnvironmentObject private var store: PackageRepositoryStore
     @State private var showAddSource = false
-    @State private var showSimulatedSourceDetail = false
-    @State private var simulatedSourceDetailGate = OneShotPresentationGate()
-
     let onOpenSettings: () -> Void
     let onOpenLogs: () -> Void
 
@@ -15,9 +12,7 @@ struct RepositorySourcesView: View {
         NavigationStack {
             List {
                 if store.sources.isEmpty {
-                    Section {
-                        emptyState
-                    }
+                    Section { emptyState }
                 } else {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
@@ -34,7 +29,6 @@ struct RepositorySourcesView: View {
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) { store.removeSource(source) } label: { Label(language.text("repository.remove_source"), systemImage: "trash") }
                             }
-                            .contextMenu { sourceActions(source) }
                         }
                     }
                 }
@@ -46,8 +40,6 @@ struct RepositorySourcesView: View {
                 ToolbarItem(placement: .navigationBarTrailing) { Button { showAddSource = true } label: { Image(systemName: "plus") } }
                 AppUtilityToolbar(language: language, onOpenSettings: onOpenSettings, onOpenLogs: onOpenLogs)
             }
-            .refreshable { await store.refreshAllAndWait() }
-            .onAppear { store.refreshAllIfNeeded() }
             .sheet(isPresented: $showAddSource) { AddRepositorySourceView() }
         }
     }
@@ -58,13 +50,6 @@ struct RepositorySourcesView: View {
             Text(language.text("repository.no_sources_title")).font(.headline)
             Button(language.text("repository.add_source")) { showAddSource = true }.buttonStyle(.bordered)
         }.frame(maxWidth: .infinity).padding(.vertical, 48)
-    }
-
-    @ViewBuilder
-    private func sourceActions(_ source: RepositorySource) -> some View {
-        Button { store.refresh(source) } label: { Label(language.text("repository.refresh_source"), systemImage: "arrow.clockwise") }
-        Button { UIPasteboard.general.string = source.manifestURL.absoluteString } label: { Label(language.text("repository.copy_link"), systemImage: "doc.on.doc") }
-        Button(role: .destructive) { store.removeSource(source) } label: { Label(language.text("repository.remove_source"), systemImage: "trash") }
     }
 }
 
@@ -135,7 +120,7 @@ struct TweakRow: View {
     }
 }
 
-// --- CHI TIẾT CÁC TWEAK ---
+// --- CHI TIẾT CÁC TWEAK (CHỈ CÀI ĐẶT) ---
 struct LocalCleanerTweakView: View {
     @AppStorage("isCleanerInstalled") var isInstalled = false
     var body: some View {
@@ -153,9 +138,6 @@ struct LocalCleanerTweakView: View {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
                 }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
             }
-            if isInstalled {
-                Section { NavigationLink { CleanerView() } label: { Label("Mở công cụ dọn dẹp", systemImage: "arrow.up.forward.app") } }
-            }
             Section("Thông tin gói") { LabeledContent("Loại", value: "Tính năng 3105"); LabeledContent("Tác giả", value: "3105") }
         }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
     }
@@ -163,7 +145,6 @@ struct LocalCleanerTweakView: View {
 
 struct LocalSupervisedTweakView: View {
     @AppStorage("isSupervisedInstalled") var isInstalled = false
-    @AppStorage("isSupervisedEnabled") var isEnabled = false
     var body: some View {
         List {
             Section {
@@ -172,15 +153,13 @@ struct LocalSupervisedTweakView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Chế độ giám sát").font(.headline)
                         Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.caption).foregroundStyle(.secondary)
-                        HStack { Text("Trạng thái"); Text(isEnabled ? "Đã bật" : "Chưa bật").fontWeight(.semibold).foregroundStyle(isEnabled ? .green : .secondary) }.font(.caption).padding(.top, 2)
                     }
                 }
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
                 }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
-            }
-            if isInstalled {
-                Section { Toggle("Chế độ giám sát", isOn: $isEnabled) } footer: { Text("Thay đổi trực tiếp giá trị IsSupervised. Sau khi áp dụng, hãy khởi động lại thiết bị.") }
+            } footer: {
+                if isInstalled { Text("Tính năng đã được thêm vào tab Đã cài. Vui lòng chuyển sang tab Đã cài để thiết lập.") }
             }
             Section("Thông tin gói") {
                 LabeledContent("Loại", value: "Tính năng 3105")
@@ -193,8 +172,6 @@ struct LocalSupervisedTweakView: View {
 
 struct LocalFootnoteTweakView: View {
     @AppStorage("isFootnoteInstalled") var isInstalled = false
-    @AppStorage("footnoteText") var text = ""
-    @State private var inputText = ""
     var body: some View {
         List {
             Section {
@@ -203,27 +180,20 @@ struct LocalFootnoteTweakView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Chữ màn hình khóa").font(.headline)
                         Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.caption).foregroundStyle(.secondary)
-                        HStack { Text("Trạng thái"); Text(text.isEmpty ? "Chưa có nội dung" : text).fontWeight(.semibold).foregroundStyle(text.isEmpty ? .secondary : .primary) }.font(.caption).padding(.top, 2)
                     }
                 }
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").frame(maxWidth: .infinity).padding(.vertical, 8)
                 }.buttonStyle(.borderedProminent).tint(isInstalled ? .gray : AppTheme.accent).disabled(isInstalled)
-            }
-            if isInstalled {
-                Section(header: Text("Nội dung Footnote")) {
-                    TextField("Nhập chữ hiển thị trên màn hình khóa", text: $inputText, axis: .vertical).lineLimit(3)
-                    Button { text = inputText } label: { Label("Lưu Footnote", systemImage: "square.and.arrow.down").frame(maxWidth: .infinity) }.buttonStyle(.bordered)
-                }
+            } footer: {
+                if isInstalled { Text("Tính năng đã được thêm vào tab Đã cài. Vui lòng chuyển sang tab Đã cài để thiết lập.") }
             }
             Section("Thông tin gói") {
                 LabeledContent("Loại", value: "Tính năng 3105")
                 LabeledContent("iOS hỗ trợ", value: "iOS 27")
                 LabeledContent("File đích", value: "Footnote.plist")
             }
-        }
-        .navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
-        .onAppear { inputText = text }
+        }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
     }
 }
 
