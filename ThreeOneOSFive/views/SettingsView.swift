@@ -15,7 +15,7 @@ struct SettingsView: View {
                     HStack(spacing: 14) {
                         AppLogo()
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("3005").font(.headline)
+                            Text("3105").font(.headline)
                             Text(language.text("common.version", appVersion)).font(.subheadline).foregroundStyle(.secondary)
                         }
                     }.padding(.vertical, 4)
@@ -49,7 +49,6 @@ struct SettingsView: View {
                     }
                 }
 
-                // MỤC DIALER ĐÃ SỬA CÚ PHÁP SECTION
                 Section {
                     HStack {
                         Label("Lấy dữ liệu Dialer", systemImage: "phone.fill")
@@ -59,7 +58,7 @@ struct SettingsView: View {
                         Text(dialerFetched ? "Đã lấy" : "Chưa lấy").foregroundStyle(.secondary)
                     }
                     .contentShape(Rectangle())
-                    .onTapGesture { dialerFetched.toggle() } // Demo chức năng
+                    .onTapGesture { dialerFetched.toggle() }
                 } header: {
                     Text("Dialer")
                 } footer: {
