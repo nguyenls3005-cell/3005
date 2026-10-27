@@ -14,6 +14,31 @@ struct RepositorySourcesView: View {
     var body: some View {
         NavigationStack {
             List {
+                // MARK: - Phần Tính năng 3105 (Offline)
+                Section {
+                    NavigationLink {
+                        Local3105FeaturesView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            // Icon chữ T màu cam trên nền hồng nhạt giống ảnh
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(red: 0.98, green: 0.92, blue: 0.92))
+                                    .frame(width: 34, height: 34)
+                                Text("T")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(Color.orange)
+                            }
+                            
+                            Text("Tính năng 3105")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.primary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+
+                // MARK: - Danh sách Nguồn tải về
                 if store.sources.isEmpty {
                     Section {
                         emptyState
@@ -135,6 +160,47 @@ struct RepositorySourcesView: View {
         }
     }
 }
+
+// MARK: - Giao diện Tính năng 3105 (Offline)
+// Bạn có thể thêm các nút bấm tính năng trực tiếp vào đây mà không cần mạng
+struct Local3105FeaturesView: View {
+    @Environment(\.appLanguage) private var language
+    
+    var body: some View {
+        List {
+            Section {
+                Text("Các tính năng tích hợp sẵn của 3105. Hoạt động 100% không cần kết nối mạng.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Section(header: Text("Tính năng hệ thống")) {
+                // Ví dụ về các tính năng bạn muốn thêm vào đây
+                Button {
+                    // Code chạy Cleaner tại đây
+                } label: {
+                    Label("Dọn dẹp hệ thống (Cleaner)", systemImage: "sparkles")
+                }
+                
+                Button {
+                    // Code bật Lock Screen Footnote tại đây
+                } label: {
+                    Label("Lock Screen Footnote", systemImage: "text.bubble.fill")
+                }
+                
+                Button {
+                    // Code bật Supervised tại đây
+                } label: {
+                    Label("Supervised Mode (iOS 27)", systemImage: "checkmark.shield.fill")
+                }
+            }
+        }
+        .navigationTitle("Tính năng 3105")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// --- CÁC PHẦN DƯỚI ĐÂY GIỮ NGUYÊN ---
 
 private struct RepositorySourceRow: View {
     @Environment(\.appLanguage) private var language
