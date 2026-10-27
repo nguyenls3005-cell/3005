@@ -17,6 +17,7 @@ struct RepositorySourcesView: View {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
                             HStack(spacing: 12) {
+                                // ICON 3105 TRONG DANH SÁCH NGUỒN
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 34, height: 34)
                                     Text("T").font(.system(size: 18, weight: .bold)).foregroundStyle(Color.orange)
@@ -59,6 +60,7 @@ struct Local3105RepoView: View {
         List {
             Section {
                 HStack(alignment: .top, spacing: 14) {
+                    // ICON 3105 TO TRONG REPO
                     ZStack { RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 42, height: 42); Text("T").font(.system(size: 22, weight: .bold)).foregroundStyle(Color.orange) }
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
@@ -96,31 +98,31 @@ struct LocalTweakListView: View {
     var body: some View {
         List {
             if title == "Tất cả gói" || title == "Dọn dẹp" || title == "Tính năng 3105" {
-                NavigationLink { LocalCleanerTweakView() } label: { TweakRow(title: "Dọn dẹp", desc: "Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.", icon: "sparkles", versionText: "3105 · Phiên bản 1.0.0") }
+                NavigationLink { LocalCleanerTweakView() } label: { TweakRow(title: "Dọn dẹp", desc: "Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.", icon: "sparkles") }
             }
             if title == "Tất cả gói" || title == "iOS 27" || title == "Tính năng 3105" {
-                NavigationLink { LocalSupervisedTweakView() } label: { TweakRow(title: "Chế độ giám sát", desc: "Bật hoặc tắt IsSupervised trên thiết bị iOS 27.", icon: "checkmark.shield.fill", versionText: "3105 · Tính năng 3105") }
-                NavigationLink { LocalFootnoteTweakView() } label: { TweakRow(title: "Chữ màn hình khóa", desc: "Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.", icon: "text.bubble.fill", versionText: "3105 · Tính năng 3105") }
+                NavigationLink { LocalSupervisedTweakView() } label: { TweakRow(title: "Chế độ giám sát", desc: "Bật hoặc tắt IsSupervised trên thiết bị iOS 27.", icon: "checkmark.shield.fill") }
+                NavigationLink { LocalFootnoteTweakView() } label: { TweakRow(title: "Chữ màn hình khóa", desc: "Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.", icon: "text.bubble.fill") }
             }
         }.listStyle(.insetGrouped).navigationTitle(title).navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct TweakRow: View {
-    let title: String; let desc: String; let icon: String; let versionText: String
+    let title: String; let desc: String; let icon: String
     var body: some View {
         HStack(spacing: 12) {
             AppRowIcon(systemName: icon, frameSize: 34)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
                 Text(desc).font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                Text(versionText).font(.caption2).foregroundStyle(.tertiary) // Màu chữ xám mờ giống tab Tệp
+                Text("3105 · Phiên bản 1.0.0").font(.caption2).foregroundStyle(.secondary)
             }
         }.padding(.vertical, 4)
     }
 }
 
-// --- CHI TIẾT CÁC TWEAK TRONG REPO (GIAO DIỆN CHUẨN 100% ẢNH) ---
+// --- CHI TIẾT CÁC TWEAK TRONG REPO (GIAO DIỆN Y HỆT ẢNH 7, 8, 9) ---
 
 struct LocalCleanerTweakView: View {
     @AppStorage("isCleanerInstalled") var isInstalled = false
@@ -132,7 +134,7 @@ struct LocalCleanerTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Dọn dẹp").font(.title3.bold())
                         Text("Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Phiên bản 1.0.0").font(.caption).foregroundStyle(.tertiary)
+                        Text("3105 · Phiên bản 1.0.0").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 
@@ -162,7 +164,7 @@ struct LocalSupervisedTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Chế độ giám sát").font(.title3.bold())
                         Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.tertiary)
+                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 
@@ -196,7 +198,7 @@ struct LocalFootnoteTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Chữ màn hình khóa").font(.title3.bold())
                         Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.tertiary)
+                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 
@@ -280,9 +282,7 @@ private struct RepositorySourceDetailView: View {
                     ForEach(tagGroups) { group in
                         NavigationLink { RepositoryTagPackagesView(title: group.name, records: records.filter { record in group.packages.contains { $0.identifier == record.package.identifier } }) } label: { RepositoryTagRow(name: group.name, count: group.packages.count, package: group.packages.first) }
                     }
-                } header: {
-                    Text(language.text("repository.source_tags")).font(.footnote.weight(.semibold)).foregroundStyle(.secondary).textCase(nil)
-                }
+                } header: { Text(language.text("repository.source_tags")).font(.footnote.weight(.semibold)).foregroundStyle(.secondary).textCase(nil) }
             }
         }
         .listStyle(.insetGrouped).navigationTitle(repository?.name ?? source?.manifestURL.host ?? language.text("repository.unknown_source")).navigationBarTitleDisplayMode(.inline)
