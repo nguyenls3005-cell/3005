@@ -1,0 +1,43 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # Cho phép bấm chạy thủ công trên GitHub
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: 1. Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: 2. Hiển thị phiên bản Xcode
+        run: xcodebuild -version
+
+      - name: 3. Liệt kê Scheme (để kiểm tra)
+        run: xcodebuild -list -project ThreeOneOSFive.xcodeproj
+
+      # Bước quan trọng: Build cho Simulator để kiểm tra code biên dịch thành công
+      - name: 4. Build cho iOS Simulator
+        run: |
+          xcodebuild clean build \
+            -project ThreeOneOSFive.xcodeproj \
+            -scheme ThreeOneOSFive \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      # (Tùy chọn) Upload file .app nếu muốn tải về chạy thử
+      - name: 5. Upload App (Simulator)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ThreeOneOSFive-simulator
+          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/ThreeOneOSFive.app
+          if-no-files-found: warn
