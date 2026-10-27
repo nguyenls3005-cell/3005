@@ -17,7 +17,6 @@ struct RepositorySourcesView: View {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
                             HStack(spacing: 12) {
-                                // ICON 3105 TRONG DANH SÁCH NGUỒN
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 34, height: 34)
                                     Text("T").font(.system(size: 18, weight: .bold)).foregroundStyle(Color.orange)
@@ -54,13 +53,11 @@ struct RepositorySourcesView: View {
     }
 }
 
-// --- GIAO DIỆN REPO LOCAL ---
 struct Local3105RepoView: View {
     var body: some View {
         List {
             Section {
                 HStack(alignment: .top, spacing: 14) {
-                    // ICON 3105 TO TRONG REPO
                     ZStack { RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 42, height: 42); Text("T").font(.system(size: 22, weight: .bold)).foregroundStyle(Color.orange) }
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
@@ -121,8 +118,6 @@ struct TweakRow: View {
         }.padding(.vertical, 4)
     }
 }
-
-// --- CHI TIẾT CÁC TWEAK TRONG REPO (GIAO DIỆN Y HỆT ẢNH 7, 8, 9) ---
 
 struct LocalCleanerTweakView: View {
     @AppStorage("isCleanerInstalled") var isInstalled = false
@@ -222,7 +217,6 @@ struct LocalFootnoteTweakView: View {
     }
 }
 
-// --- GIỮ NGUYÊN CÁC HÀM CŨ CỦA BẠN ---
 private struct RepositorySourceRow: View {
     @Environment(\.appLanguage) private var language
     @EnvironmentObject private var store: PackageRepositoryStore
