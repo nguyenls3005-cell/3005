@@ -13,11 +13,23 @@ jobs:
       - name: 1. Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: 2. Build Archive (Unsigned)
+      - name: 2. Tự động phát hiện Scheme
+        id: find_scheme
+        run: |
+          # Liệt kê tất cả scheme có sẵn (sau khi shared hoặc có sẵn trong repo)
+          SCHEME=$(xcodebuild -list -project ThreeOneOSFive.xcodeproj 2>/dev/null | awk '/Schemes:/{found=1; next} found && NF{print; exit}' | xargs)
+          if [ -z "$SCHEME" ]; then
+            echo "⚠️ Không tìm thấy scheme nào được shared. Fallback về tên project."
+            SCHEME="ThreeOneOSFive"
+          fi
+          echo "Scheme được sử dụng: $SCHEME"
+          echo "scheme_name=$SCHEME" >> $GITHUB_OUTPUT
+
+      - name: 3. Build Archive (Unsigned)
         run: |
           xcodebuild clean archive \
             -project ThreeOneOSFive.xcodeproj \
-            -scheme ThreeOneOSFive \
+            -scheme "${{ steps.find_scheme.outputs.scheme_name }}" \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
@@ -25,17 +37,20 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: 3. Đóng gói thành file .ipa (Unsigned)
+      - name: 4. Đóng gói thành file .ipa (Unsigned)
         run: |
-          # Trích xuất file .app từ archive
           mkdir -p "$RUNNER_TEMP/Payload"
-          cp -R "$RUNNER_TEMP/App.xcarchive/Products/Applications/ThreeOneOSFive.app" "$RUNNER_TEMP/Payload/"
-          
-          # Nén thành file .ipa
+          # Tên thư mục .app có thể khác với tên scheme, nên dùng find để chắc chắn
+          APP_PATH=$(find "$RUNNER_TEMP/App.xcarchive/Products/Applications" -name "*.app" -maxdepth 1 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ Không tìm thấy file .app trong archive."
+            exit 1
+          fi
+          cp -R "$APP_PATH" "$RUNNER_TEMP/Payload/"
           cd "$RUNNER_TEMP"
           zip -qry "ThreeOneOSFive-unsigned.ipa" Payload
 
-      - name: 4. Upload file IPA
+      - name: 5. Upload file IPA
         uses: actions/upload-artifact@v4
         with:
           name: ThreeOneOSFive-unsigned-ipa
