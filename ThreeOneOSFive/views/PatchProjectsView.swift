@@ -84,7 +84,8 @@ struct PatchProjectsView: View {
                         if isCleanerInstalled || isSupervisedInstalled || isFootnoteInstalled {
                             Section("Tính năng 3105") {
                                 if isCleanerInstalled {
-                                    NavigationLink { InstalledCleanerTweakView() } label: { localTweakRow(title: "Dọn dẹp", icon: "sparkles") }
+                                    // ẤN VÀO DỌN DẸP RA THẲNG CLEANERVIEW
+                                    NavigationLink { CleanerView() } label: { localTweakRow(title: "Dọn dẹp", icon: "sparkles") }
                                 }
                                 if isSupervisedInstalled {
                                     NavigationLink { InstalledSupervisedTweakView() } label: { localTweakRow(title: "Chế độ giám sát", icon: "checkmark.shield.fill") }
@@ -160,6 +161,7 @@ struct PatchProjectsView: View {
         }
     }
 
+    // HÀM TẠO DÒNG HIỂN THỊ TRONG TAB ĐÃ CÀI (MÀU GIỐNG TAB TỆP)
     private func localTweakRow(title: String, icon: String) -> some View {
         HStack(spacing: 12) {
             AppRowIcon(systemName: icon, frameSize: 34)
@@ -169,10 +171,10 @@ struct PatchProjectsView: View {
                     Image(systemName: "shippingbox.fill").font(.system(size: 10))
                     Text("Tính năng 3105").font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundStyle(Color.orange.opacity(0.8)) // Chỉnh màu dịu hơn
+                .foregroundStyle(Color.secondary) // Màu xám mờ giống hệt Tab Tệp
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.orange.opacity(0.1), in: Capsule())
+                .background(Color.secondary.opacity(0.1), in: Capsule())
             }
         }.padding(.vertical, 4)
     }
@@ -244,35 +246,9 @@ struct PatchProjectsView: View {
     }
 }
 
-// MARK: - GIAO DIỆN QUẢN LÝ ĐÃ CÀI (CÓ NÚT XOÁ)
-
-struct InstalledCleanerTweakView: View {
-    @Environment(\.dismiss) private var dismiss
-    @AppStorage("isCleanerInstalled") var isInstalled = false
-    var body: some View {
-        List {
-            Section {
-                NavigationLink { CleanerView() } label: {
-                    Label("Mở công cụ dọn dẹp", systemImage: "arrow.up.forward.app")
-                }
-            }
-            Section {
-                Button(role: .destructive) {
-                    withAnimation { isInstalled = false; dismiss() }
-                } label: {
-                    HStack { Image(systemName: "trash"); Text("Gỡ cài đặt") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
-                }.buttonStyle(.plain).foregroundStyle(.red)
-            }
-            Section("Thông tin gói") { LabeledContent("Loại", value: "Tính năng 3105"); LabeledContent("Tác giả", value: "3105") }
-        }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
-    }
-}
-
+// MARK: - CÁC VIEW CÀI ĐẶT TRONG TAB ĐÃ CÀI
 struct InstalledSupervisedTweakView: View {
-    @Environment(\.dismiss) private var dismiss
-    @AppStorage("isSupervisedInstalled") var isInstalled = false
     @AppStorage("isSupervisedEnabled") var isEnabled = false
-    
     var body: some View {
         List {
             Section {
@@ -282,34 +258,13 @@ struct InstalledSupervisedTweakView: View {
                         Text("Chế độ giám sát").font(.headline)
                         Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.subheadline).foregroundStyle(.secondary)
                         HStack(spacing: 6) {
-                            if isEnabled {
-                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                                Text("Đã bật").font(.subheadline).foregroundStyle(.green)
-                            } else {
-                                Image(systemName: "circle.dashed").foregroundStyle(.secondary)
-                                Text("Chưa bật").font(.subheadline).foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.top, 4)
+                            if isEnabled { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green); Text("Đã bật").font(.subheadline).foregroundStyle(.green) }
+                            else { Image(systemName: "circle.dashed").foregroundStyle(.secondary); Text("Chưa bật").font(.subheadline).foregroundStyle(.secondary) }
+                        }.padding(.top, 4)
                     }
                 }.padding(.vertical, 8)
             }
-            
-            Section {
-                Toggle("Chế độ giám sát", isOn: $isEnabled)
-            } footer: {
-                Text("Thay đổi trực tiếp giá trị IsSupervised.\nSau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.")
-                    .padding(.top, 8)
-            }
-            
-            Section {
-                Button(role: .destructive) {
-                    withAnimation { isEnabled = false; isInstalled = false; dismiss() }
-                } label: {
-                    HStack { Image(systemName: "trash"); Text("Gỡ cài đặt") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
-                }.buttonStyle(.plain).foregroundStyle(.red)
-            }
-            
+            Section { Toggle("Chế độ giám sát", isOn: $isEnabled) } footer: { Text("Thay đổi trực tiếp giá trị IsSupervised.\nSau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.").padding(.top, 8) }
             Section("Thông tin gói") {
                 LabeledContent("Loại", value: "Tính năng 3105")
                 LabeledContent("iOS hỗ trợ", value: "iOS 27")
@@ -320,11 +275,8 @@ struct InstalledSupervisedTweakView: View {
 }
 
 struct InstalledFootnoteTweakView: View {
-    @Environment(\.dismiss) private var dismiss
-    @AppStorage("isFootnoteInstalled") var isInstalled = false
     @AppStorage("footnoteText") var savedText = ""
     @State private var inputText = ""
-    
     var body: some View {
         List {
             Section {
@@ -334,46 +286,23 @@ struct InstalledFootnoteTweakView: View {
                         Text("Chữ màn hình khóa").font(.headline)
                         Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.subheadline).foregroundStyle(.secondary)
                         HStack(spacing: 6) {
-                            if savedText.isEmpty {
-                                Image(systemName: "circle.dashed").foregroundStyle(.secondary)
-                                Text("Chưa có nội dung").font(.subheadline).foregroundStyle(.secondary)
-                            } else {
-                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                                Text("Đã thiết lập nội dung").font(.subheadline).foregroundStyle(.green)
-                            }
-                        }
-                        .padding(.top, 4)
+                            if savedText.isEmpty { Image(systemName: "circle.dashed").foregroundStyle(.secondary); Text("Chưa có nội dung").font(.subheadline).foregroundStyle(.secondary) }
+                            else { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green); Text("Đã thiết lập nội dung").font(.subheadline).foregroundStyle(.green) }
+                        }.padding(.top, 4)
                     }
                 }.padding(.vertical, 8)
             }
-            
             Section {
-                TextField("Nhập chữ hiển thị trên màn hình khóa", text: $inputText, axis: .vertical)
-                    .lineLimit(3).padding(.vertical, 8)
-                
-                Button {
-                    savedText = inputText
-                } label: {
-                    Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(Color.orange).clipShape(Capsule())
-                }.buttonStyle(.plain)
-                
-                Button(role: .destructive) {
-                    withAnimation { inputText = ""; savedText = ""; isInstalled = false; dismiss() }
-                } label: {
-                    HStack { Image(systemName: "trash"); Text("Xoá Footnote") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 12)
-                }.buttonStyle(.plain).foregroundStyle(.red)
-            } footer: {
-                Text("Sau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.").padding(.top, 8)
-            }
-            
+                TextField("Nhập chữ hiển thị trên màn hình khóa", text: $inputText, axis: .vertical).lineLimit(3).padding(.vertical, 8)
+                Button { savedText = inputText } label: { Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(Color.orange).clipShape(Capsule()) }.buttonStyle(.plain)
+                Button(role: .destructive) { withAnimation { inputText = ""; savedText = "" } } label: { HStack { Image(systemName: "trash"); Text("Xoá Footnote") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 12) }.buttonStyle(.plain).foregroundStyle(.red)
+            } footer: { Text("Sau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.").padding(.top, 8) }
             Section("Thông tin gói") {
                 LabeledContent("Loại", value: "Tính năng 3105")
                 LabeledContent("iOS hỗ trợ", value: "iOS 27")
                 LabeledContent("File đích", value: "Footnote.plist")
             }
-        }
-        .navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
-        .onAppear { inputText = savedText }
+        }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline).onAppear { inputText = savedText }
     }
 }
 
@@ -535,9 +464,7 @@ private struct PatchProjectDetailView: View {
                 PatchProjectEditorView(existingProject: project, passwordIsProtected: item.summary.isPasswordProtected) { updatedProject, _ in store.update(project: updatedProject) }
             }
         }
-        .sheet(item: $editingRule) { rule in
-            PatchRuleEditorView(rule: rule) { updatedRule in updateRule(updatedRule) }
-        }
+        .sheet(item: $editingRule) { rule in PatchRuleEditorView(rule: rule) { updatedRule in updateRule(updatedRule) } }
         .confirmationDialog(language.text("patch.apply_confirm_title"), isPresented: $showApplyConfirmation, titleVisibility: .visible) {
             Button(language.text("patch.apply")) { apply() }
             Button(language.text("common.cancel"), role: .cancel) {}
@@ -554,31 +481,17 @@ private struct PatchProjectDetailView: View {
             Button(language.text("patch.reset"), role: .destructive) { resetToAppliedState() }
             Button(language.text("common.cancel"), role: .cancel) {}
         } message: { Text(language.text("patch.reset_confirm_message")) }
-        .alert(item: $actionAlert) { alert in
-            Alert(title: Text(language.text(alert.titleKey)), message: Text(alert.message(language: language)), dismissButton: .default(Text(language.text("common.ok"))))
-        }
+        .alert(item: $actionAlert) { alert in Alert(title: Text(language.text(alert.titleKey)), message: Text(alert.message(language: language)), dismissButton: .default(Text(language.text("common.ok")))) }
         .sheet(item: $shareRequest) { request in PatchActivityView(items: [request.url]).ignoresSafeArea() }
     }
 
-    private func actionLabel(_ key: String, systemImage: String) -> some View {
-        Label(language.text(key), systemImage: systemImage).frame(maxWidth: .infinity, alignment: .leading)
-    }
-    private func patchInfoRow(label: String, value: String) -> some View {
-        patchInfoRow(label: label) { Text(value).foregroundStyle(.primary) }
-    }
+    private func actionLabel(_ key: String, systemImage: String) -> some View { Label(language.text(key), systemImage: systemImage).frame(maxWidth: .infinity, alignment: .leading) }
+    private func patchInfoRow(label: String, value: String) -> some View { patchInfoRow(label: label) { Text(value).foregroundStyle(.primary) } }
     private func patchInfoRow<Content: View>(label: String, @ViewBuilder value: () -> Content) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(label).foregroundStyle(.secondary)
-            Spacer(minLength: 16)
-            value().multilineTextAlignment(.trailing).fixedSize(horizontal: false, vertical: true)
-        }.font(.subheadline).padding(.vertical, 5)
+        HStack(alignment: .firstTextBaseline, spacing: 12) { Text(label).foregroundStyle(.secondary); Spacer(minLength: 16); value().multilineTextAlignment(.trailing).fixedSize(horizontal: false, vertical: true) }.font(.subheadline).padding(.vertical, 5)
     }
     private func ruleSummary(_ rule: PatchRule) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(rule.bundleID).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-            Text(rule.relativePath).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(2)
-            Label(rule.replacementFilename, systemImage: "arrow.triangle.2.circlepath").font(.caption).foregroundStyle(AppTheme.accent)
-        }.padding(.vertical, 3)
+        VStack(alignment: .leading, spacing: 5) { Text(rule.bundleID).font(.subheadline.weight(.semibold)).foregroundStyle(.primary); Text(rule.relativePath).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(2); Label(rule.replacementFilename, systemImage: "arrow.triangle.2.circlepath").font(.caption).foregroundStyle(AppTheme.accent) }.padding(.vertical, 3)
     }
     private func updateRule(_ updatedRule: PatchRule) {
         guard var project = item?.project, let index = project.rules.firstIndex(where: { $0.id == updatedRule.id }) else { return }
@@ -595,11 +508,8 @@ private struct PatchProjectDetailView: View {
                 let project = item.summary.schemaVersion >= 2 && item.canInspectContents ? try PatchProjectLibrary.synchronizeWorkspace(item: item) : baseProject
                 _ = try DevicePatchService.apply(project: project)
                 await MainActor.run { store.reload(); isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.done", messageKey: "patch.applied_message") }
-            } catch let error as PatchPackageError {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) }
-            } catch {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.apply") }
-            }
+            } catch let error as PatchPackageError { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) } }
+            catch { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.apply") } }
         }
     }
     private func prepareExport() {
@@ -609,11 +519,8 @@ private struct PatchProjectDetailView: View {
             do {
                 if item.summary.schemaVersion >= 2, item.canInspectContents { _ = try PatchProjectLibrary.synchronizeWorkspace(item: item) }
                 await MainActor.run { store.reload(); isWorking = false; shareRequest = PatchShareRequest(url: item.packageURL) }
-            } catch let error as PatchPackageError {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) }
-            } catch {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.invalid_project") }
-            }
+            } catch let error as PatchPackageError { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) } }
+            catch { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.invalid_project") } }
         }
     }
     private var changedRestoreMessage: String {
@@ -628,17 +535,10 @@ private struct PatchProjectDetailView: View {
         Task.detached(priority: .userInitiated) {
             do {
                 let inspection = try DevicePatchService.inspectRestore(receipt: receipt)
-                if inspection.changedTargets.isEmpty {
-                    try DevicePatchService.restore(receipt: receipt)
-                    await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.done", messageKey: "patch.restored_message") }
-                } else {
-                    await MainActor.run { isWorking = false; restoreChangedPaths = inspection.changedTargets.map(\.displayPath); showChangedRestoreConfirmation = true }
-                }
-            } catch let error as PatchPackageError {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) }
-            } catch {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.restore") }
-            }
+                if inspection.changedTargets.isEmpty { try DevicePatchService.restore(receipt: receipt); await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.done", messageKey: "patch.restored_message") } }
+                else { await MainActor.run { isWorking = false; restoreChangedPaths = inspection.changedTargets.map(\.displayPath); showChangedRestoreConfirmation = true } }
+            } catch let error as PatchPackageError { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) } }
+            catch { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.restore") } }
         }
     }
     private func restore(allowChangedTargets: Bool) {
@@ -648,11 +548,8 @@ private struct PatchProjectDetailView: View {
             do {
                 try DevicePatchService.restore(receipt: receipt, allowChangedTargets: allowChangedTargets)
                 await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.done", messageKey: "patch.restored_message") }
-            } catch let error as PatchPackageError {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) }
-            } catch {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.restore") }
-            }
+            } catch let error as PatchPackageError { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) } }
+            catch { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.restore") } }
         }
     }
     private func resetToAppliedState() {
@@ -662,21 +559,12 @@ private struct PatchProjectDetailView: View {
             do {
                 try DevicePatchService.resetToAppliedState(receipt: receipt, project: project)
                 await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.done", messageKey: "patch.reset_message") }
-            } catch let error as PatchPackageError {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) }
-            } catch {
-                await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.reset") }
-            }
+            } catch let error as PatchPackageError { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: privateErrorKey(for: error), messageArgument: privateErrorArgument(for: error)) } }
+            catch { await MainActor.run { isWorking = false; actionAlert = PatchStoreAlert(titleKey: "common.failed", messageKey: "patch.error.reset") } }
         }
     }
-    private func privateErrorKey(for error: PatchPackageError) -> String {
-        guard item?.project?.isPrivate == true, item?.isAuthorCopy == false else { return error.localizationKey }
-        return "patch.error.private_operation"
-    }
-    private func privateErrorArgument(for error: PatchPackageError) -> String? {
-        guard item?.project?.isPrivate == true, item?.isAuthorCopy == false else { return error.localizationArgument }
-        return nil
-    }
+    private func privateErrorKey(for error: PatchPackageError) -> String { guard item?.project?.isPrivate == true, item?.isAuthorCopy == false else { return error.localizationKey }; return "patch.error.private_operation" }
+    private func privateErrorArgument(for error: PatchPackageError) -> String? { guard item?.project?.isPrivate == true, item?.isAuthorCopy == false else { return error.localizationArgument }; return nil }
 }
 private struct PatchShareRequest: Identifiable { let id = UUID(); let url: URL }
 private struct PatchActivityView: UIViewControllerRepresentable {
