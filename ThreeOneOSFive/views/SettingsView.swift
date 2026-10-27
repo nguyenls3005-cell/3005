@@ -49,8 +49,8 @@ struct SettingsView: View {
                     }
                 }
 
-                // MỤC DIALER MỚI (Giống ảnh 9)
-                Section("Dialer") {
+                // MỤC DIALER ĐÃ SỬA CÚ PHÁP SECTION
+                Section {
                     HStack {
                         Label("Lấy dữ liệu Dialer", systemImage: "phone.fill")
                         Spacer()
@@ -60,6 +60,8 @@ struct SettingsView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture { dialerFetched.toggle() } // Demo chức năng
+                } header: {
+                    Text("Dialer")
                 } footer: {
                     Text("Mở Điện thoại > Bàn phím và bấm một phím trước khi lấy dữ liệu. 3105 chỉ nhận diện phím và chế độ sáng/tối.")
                 }
@@ -85,7 +87,6 @@ struct SettingsView: View {
                     Text(language.text("settings.supported_versions_footer"))
                 }
 
-                // Phần Credits và Social giữ nguyên...
                 Section(language.text("settings.social_media")) {
                     creditsRow(name: "GitHub", role: language.text("social.github_role"), url: "https://github.com/YangJiiii/3105")
                     creditsRow(name: "Cộng Đồng IOSVN", role: language.text("social.iosvn_role"), url: "https://t.me/ioscrackvn")
