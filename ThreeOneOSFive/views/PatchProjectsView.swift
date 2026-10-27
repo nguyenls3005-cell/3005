@@ -84,13 +84,13 @@ struct PatchProjectsView: View {
                         if isCleanerInstalled || isSupervisedInstalled || isFootnoteInstalled {
                             Section("Tính năng 3105") {
                                 if isCleanerInstalled {
-                                    NavigationLink { CleanerView() } label: { localTweakRow(title: "Dọn dẹp", icon: "sparkles") }
+                                    NavigationLink { InstalledCleanerTweakView() } label: { localTweakRow(title: "Dọn dẹp", icon: "sparkles") }
                                 }
                                 if isSupervisedInstalled {
-                                    NavigationLink { LocalSupervisedTweakView() } label: { localTweakRow(title: "Chế độ giám sát", icon: "checkmark.shield.fill") }
+                                    NavigationLink { InstalledSupervisedTweakView() } label: { localTweakRow(title: "Chế độ giám sát", icon: "checkmark.shield.fill") }
                                 }
                                 if isFootnoteInstalled {
-                                    NavigationLink { LocalFootnoteTweakView() } label: { localTweakRow(title: "Chữ màn hình khóa", icon: "text.bubble.fill") }
+                                    NavigationLink { InstalledFootnoteTweakView() } label: { localTweakRow(title: "Chữ màn hình khóa", icon: "text.bubble.fill") }
                                 }
                             }
                         }
@@ -169,10 +169,10 @@ struct PatchProjectsView: View {
                     Image(systemName: "shippingbox.fill").font(.system(size: 10))
                     Text("Tính năng 3105").font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundStyle(Color.orange)
+                .foregroundStyle(Color.orange.opacity(0.8)) // Chỉnh màu dịu hơn
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.orange.opacity(0.12), in: Capsule())
+                .background(Color.orange.opacity(0.1), in: Capsule())
             }
         }.padding(.vertical, 4)
     }
@@ -244,6 +244,140 @@ struct PatchProjectsView: View {
     }
 }
 
+// MARK: - GIAO DIỆN QUẢN LÝ ĐÃ CÀI (CÓ NÚT XOÁ)
+
+struct InstalledCleanerTweakView: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("isCleanerInstalled") var isInstalled = false
+    var body: some View {
+        List {
+            Section {
+                NavigationLink { CleanerView() } label: {
+                    Label("Mở công cụ dọn dẹp", systemImage: "arrow.up.forward.app")
+                }
+            }
+            Section {
+                Button(role: .destructive) {
+                    withAnimation { isInstalled = false; dismiss() }
+                } label: {
+                    HStack { Image(systemName: "trash"); Text("Gỡ cài đặt") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
+                }.buttonStyle(.plain).foregroundStyle(.red)
+            }
+            Section("Thông tin gói") { LabeledContent("Loại", value: "Tính năng 3105"); LabeledContent("Tác giả", value: "3105") }
+        }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct InstalledSupervisedTweakView: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("isSupervisedInstalled") var isInstalled = false
+    @AppStorage("isSupervisedEnabled") var isEnabled = false
+    
+    var body: some View {
+        List {
+            Section {
+                HStack(alignment: .top, spacing: 12) {
+                    AppRowIcon(systemName: "checkmark.shield.fill", frameSize: 44)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Chế độ giám sát").font(.headline)
+                        Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.subheadline).foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            if isEnabled {
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                                Text("Đã bật").font(.subheadline).foregroundStyle(.green)
+                            } else {
+                                Image(systemName: "circle.dashed").foregroundStyle(.secondary)
+                                Text("Chưa bật").font(.subheadline).foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                }.padding(.vertical, 8)
+            }
+            
+            Section {
+                Toggle("Chế độ giám sát", isOn: $isEnabled)
+            } footer: {
+                Text("Thay đổi trực tiếp giá trị IsSupervised.\nSau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.")
+                    .padding(.top, 8)
+            }
+            
+            Section {
+                Button(role: .destructive) {
+                    withAnimation { isEnabled = false; isInstalled = false; dismiss() }
+                } label: {
+                    HStack { Image(systemName: "trash"); Text("Gỡ cài đặt") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
+                }.buttonStyle(.plain).foregroundStyle(.red)
+            }
+            
+            Section("Thông tin gói") {
+                LabeledContent("Loại", value: "Tính năng 3105")
+                LabeledContent("iOS hỗ trợ", value: "iOS 27")
+                LabeledContent("File đích", value: "CloudConfigurationDetails.plist")
+            }
+        }.navigationTitle("Chế độ giám sát").navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct InstalledFootnoteTweakView: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("isFootnoteInstalled") var isInstalled = false
+    @AppStorage("footnoteText") var savedText = ""
+    @State private var inputText = ""
+    
+    var body: some View {
+        List {
+            Section {
+                HStack(alignment: .top, spacing: 12) {
+                    AppRowIcon(systemName: "text.bubble.fill", frameSize: 44)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Chữ màn hình khóa").font(.headline)
+                        Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.subheadline).foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            if savedText.isEmpty {
+                                Image(systemName: "circle.dashed").foregroundStyle(.secondary)
+                                Text("Chưa có nội dung").font(.subheadline).foregroundStyle(.secondary)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                                Text("Đã thiết lập nội dung").font(.subheadline).foregroundStyle(.green)
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                }.padding(.vertical, 8)
+            }
+            
+            Section {
+                TextField("Nhập chữ hiển thị trên màn hình khóa", text: $inputText, axis: .vertical)
+                    .lineLimit(3).padding(.vertical, 8)
+                
+                Button {
+                    savedText = inputText
+                } label: {
+                    Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(Color.orange).clipShape(Capsule())
+                }.buttonStyle(.plain)
+                
+                Button(role: .destructive) {
+                    withAnimation { inputText = ""; savedText = ""; isInstalled = false; dismiss() }
+                } label: {
+                    HStack { Image(systemName: "trash"); Text("Xoá Footnote") }.font(.headline).frame(maxWidth: .infinity).padding(.vertical, 12)
+                }.buttonStyle(.plain).foregroundStyle(.red)
+            } footer: {
+                Text("Sau khi áp dụng, hãy khởi động lại giao diện hệ thống hoặc khởi động lại thiết bị để thay đổi có hiệu lực.").padding(.top, 8)
+            }
+            
+            Section("Thông tin gói") {
+                LabeledContent("Loại", value: "Tính năng 3105")
+                LabeledContent("iOS hỗ trợ", value: "iOS 27")
+                LabeledContent("File đích", value: "Footnote.plist")
+            }
+        }
+        .navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
+        .onAppear { inputText = savedText }
+    }
+}
+
+// --- GIỮ NGUYÊN CÁC HÀM CŨ CỦA BẠN ---
 private struct WallpaperImportFeedback: Identifiable { let id = UUID(); let titleKey: String; let message: String }
 private struct PatchProjectRow: View {
     let item: PatchLibraryItem
