@@ -17,10 +17,12 @@ struct RepositorySourcesView: View {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
                             HStack(spacing: 12) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 34, height: 34)
-                                    Text("T").font(.system(size: 18, weight: .bold)).foregroundStyle(Color.orange)
-                                }
+                                Image("anthumuc3105")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 34, height: 34)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                
                                 Text("Tính năng 3105").font(.body.weight(.semibold)).foregroundStyle(.primary)
                             }.padding(.vertical, 4)
                         }
@@ -58,7 +60,12 @@ struct Local3105RepoView: View {
         List {
             Section {
                 HStack(alignment: .top, spacing: 14) {
-                    ZStack { RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.98, green: 0.92, blue: 0.92)).frame(width: 42, height: 42); Text("T").font(.system(size: 22, weight: .bold)).foregroundStyle(Color.orange) }
+                    Image("anthumuc3105")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 42, height: 42)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
                         Text("Các tính năng hệ thống được tích hợp sẵn trong 3105, không tải từ mạng.").font(.caption).foregroundStyle(.secondary).lineLimit(2)
