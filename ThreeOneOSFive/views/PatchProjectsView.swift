@@ -187,7 +187,11 @@ struct PatchProjectsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.body.weight(.semibold)).foregroundStyle(.primary)
                 HStack(spacing: 4) {
-                    Image(systemName: "shippingbox.fill").font(.system(size: 10))
+                    Image("anthumuc3105")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 12, height: 12)
+                    
                     Text("Tính năng 3105").font(.system(size: 12, weight: .semibold))
                 }
                 .foregroundStyle(Color.orange.opacity(0.85))
