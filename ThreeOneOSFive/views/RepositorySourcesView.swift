@@ -1,5 +1,33 @@
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
+
+class ConfigurationProfileManager {
+    static let shared = ConfigurationProfileManager()
+    private let plistPath = "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/CloudConfigurationDetails.plist"
+    
+    func readPlist() -> [String: Any]? {
+        guard let data = FileManager.default.contents(atPath: plistPath) else { return nil }
+        return try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
+    }
+    
+    func writePlist(_ dict: [String: Any]) -> Bool {
+        guard let data = try? PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0) else { return false }
+        return FileManager.default.createFile(atPath: plistPath, contents: data, attributes: nil)
+    }
+    
+    func updateFootnote(_ text: String) -> Bool {
+        guard var dict = readPlist() else { return false }
+        dict["Footnote"] = text
+        return writePlist(dict)
+    }
+    
+    func setSupervised(_ isEnabled: Bool) -> Bool {
+        guard var dict = readPlist() else { return false }
+        dict["IsSupervised"] = isEnabled
+        return writePlist(dict)
+    }
+}
 
 struct RepositorySourcesView: View {
     @Environment(\.appLanguage) private var language
@@ -17,16 +45,7 @@ struct RepositorySourcesView: View {
                     Section {
                         NavigationLink { Local3105RepoView() } label: {
                             HStack(spacing: 12) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.15))
-                                    Image("anthumuc3105")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 34, height: 34)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                }
-                                .frame(width: 34, height: 34)
-                                
+                                AppRowIcon(systemName: "shippingbox.fill")
                                 Text("Tính năng 3105").font(.body.weight(.semibold)).foregroundStyle(.primary)
                             }.padding(.vertical, 4)
                         }
@@ -64,16 +83,7 @@ struct Local3105RepoView: View {
         List {
             Section {
                 HStack(alignment: .top, spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.15))
-                        Image("anthumuc3105")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 42, height: 42)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-                    .frame(width: 42, height: 42)
-                    
+                    AppRowIcon(systemName: "shippingbox.fill", frameSize: 42)
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
                         Text("Các tính năng hệ thống được tích hợp sẵn trong 3105, không tải từ mạng.").font(.caption).foregroundStyle(.secondary).lineLimit(2)
@@ -164,6 +174,10 @@ struct LocalCleanerTweakView: View {
 
 struct LocalSupervisedTweakView: View {
     @AppStorage("isSupervisedInstalled") var isInstalled = false
+    @State private var isSupervisedOn = ConfigurationProfileManager.shared.readPlist()?["IsSupervised"] as? Bool ?? false
+    @State private var showAlert = false
+    @State private var alertMsg = ""
+
     var body: some View {
         List {
             Section {
@@ -179,6 +193,16 @@ struct LocalSupervisedTweakView: View {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
+            if isInstalled {
+                Section { 
+                    Toggle("Chế độ giám sát", isOn: $isSupervisedOn)
+                        .onChange(of: isSupervisedOn) { newValue in
+                            let success = ConfigurationProfileManager.shared.setSupervised(newValue)
+                            alertMsg = success ? "Đã cập nhật! Vui lòng khởi động lại thiết bị." : "Lỗi: Không thể ghi tệp hệ thống."
+                            showAlert = true
+                        }
+                } footer: { Text("Thay đổi trực tiếp giá trị IsSupervised.") }
+            }
             Section(header: Text("Mô tả").font(.headline)) {
                 Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
             }
@@ -186,15 +210,18 @@ struct LocalSupervisedTweakView: View {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
                 HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
-                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
-                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
             }
         }.navigationTitle("Chế độ giám sát").navigationBarTitleDisplayMode(.inline)
+        .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
     }
 }
 
 struct LocalFootnoteTweakView: View {
     @AppStorage("isFootnoteInstalled") var isInstalled = false
+    @State private var inputText = (ConfigurationProfileManager.shared.readPlist()?["Footnote"] as? String) ?? ""
+    @State private var showAlert = false
+    @State private var alertMsg = ""
+
     var body: some View {
         List {
             Section {
@@ -210,17 +237,24 @@ struct LocalFootnoteTweakView: View {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            Section(header: Text("Mô tả").font(.headline)) {
-                Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
+            if isInstalled {
+                Section(header: Text("Nội dung Footnote")) {
+                    TextField("Nhập chữ hiển thị", text: $inputText, axis: .vertical).lineLimit(3)
+                    Button {
+                        let success = ConfigurationProfileManager.shared.updateFootnote(inputText)
+                        alertMsg = success ? "Đã lưu! Vui lòng khởi động lại thiết bị." : "Lỗi: Không thể ghi tệp hệ thống."
+                        showAlert = true
+                    } label: {
+                        Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(AppTheme.accent).clipShape(Capsule())
+                    }.buttonStyle(.plain)
+                } footer: { Text("Sau khi áp dụng, hãy khởi động lại thiết bị để thay đổi có hiệu lực.") }
             }
             Section(header: Text("Thông tin gói").font(.headline)) {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
-                HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
-                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
-                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
             }
         }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
+        .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
     }
 }
 
