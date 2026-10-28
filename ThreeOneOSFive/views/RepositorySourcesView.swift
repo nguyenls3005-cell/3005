@@ -181,6 +181,56 @@ struct LocalFootnoteTweakView: View {
     }
 }
 
+struct AddRepositorySourceView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var language
+    @EnvironmentObject private var store: PackageRepositoryStore
+    @State private var sourceURL = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("https://example.com/repo.json", text: $sourceURL)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL).textContentType(.URL).submitLabel(.done).onSubmit(add)
+                } header: { Text(language.text("repository.source_url")) } footer: { Text(language.text("repository.source_url_footer")) }
+            }
+            .navigationTitle(language.text("repository.add_source")).navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(language.text("common.cancel")) { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(language.text("repository.add"), action: add).fontWeight(.semibold).disabled(sourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+            }
+        }
+    }
+
+    private func add() {
+        guard !sourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        if store.addSource(rawURL: sourceURL) { dismiss() }
+    }
+}
+
+struct RepositorySourceIcon: View {
+    @StateObject private var imageLoader = RepositoryImageLoader()
+    let repository: PackageRepository?
+    let fallbackText: String
+
+    var body: some View {
+        Group {
+            if let image = imageLoader.image { Image(uiImage: image).resizable().scaledToFill() }
+            else { placeholder }
+        }
+        .frame(width: 38, height: 38).background(AppTheme.accent.opacity(0.12)).clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .accessibilityHidden(true).task(id: repository?.iconURL) {
+            guard let iconURL = repository?.iconURL else { return }
+            await imageLoader.load(url: iconURL, maximumPixelSize: 160)
+        }
+    }
+
+    private var placeholder: some View {
+        Text(String(fallbackText.prefix(1)).uppercased()).font(.headline).foregroundStyle(AppTheme.accent)
+    }
+}
+
 private struct RepositorySourceRow: View {
     @Environment(\.appLanguage) private var language
     @EnvironmentObject private var store: PackageRepositoryStore
