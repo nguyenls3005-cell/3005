@@ -63,9 +63,6 @@ struct LegacyRepositoryExploreView: View {
             if wallpapersSupported {
                 builtInToolButton(.wallpaper, titleKey: "tab.wallpapers", subtitleKey: "repository.wallpaper_subtitle", systemImage: wallpaperSymbol)
             }
-            if !cleanerEnabled && !wallpapersSupported {
-                Text(language.text("repository.tools_disabled")).font(.subheadline).foregroundStyle(.secondary)
-            }
         } header: {
             Text(language.text("repository.built_in_tools"))
         } footer: {
@@ -84,7 +81,7 @@ struct LegacyRepositoryExploreView: View {
                 Spacer()
                 Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
             }.contentShape(Rectangle())
-        }.buttonStyle(.plain).accessibilityHint(language.text("repository.open_tool_hint"))
+        }.buttonStyle(.plain)
     }
 
     private var marketplaceEmptySection: some View {
@@ -92,7 +89,6 @@ struct LegacyRepositoryExploreView: View {
             VStack(spacing: 12) {
                 Image(systemName: "square.stack.3d.up").font(.system(size: AppTheme.emptyIconSize, weight: .light)).foregroundStyle(AppTheme.accent)
                 Text(language.text(repositoryStore.sources.isEmpty ? "repository.no_sources_title" : "repository.no_packages_title")).font(.headline)
-                Text(language.text(repositoryStore.sources.isEmpty ? "repository.no_sources_message" : "repository.no_packages_message")).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }.frame(maxWidth: .infinity).padding(.vertical, 32)
         }
     }
@@ -144,7 +140,7 @@ struct RepositoryPackageDetailView: View {
                     }
                     
                     Button {
-                        if record.package.kind == .dialerTheme && !dialerFetched {
+                        if record.package.kind.rawValue == "dialer" && !dialerFetched {
                             showDialerError = true
                         } else {
                             repositoryStore.install(record, using: patchStore)
@@ -156,8 +152,7 @@ struct RepositoryPackageDetailView: View {
                             if repositoryStore.isDownloading(record) {
                                 ProgressView().tint(.white)
                             } else {
-                                Text(isInstalled ? "Cập nhật" : "Cài đặt")
-                                    .font(.headline)
+                                Text(isInstalled ? "Cập nhật" : "Cài đặt").font(.headline)
                             }
                             Spacer()
                         }
@@ -174,16 +169,6 @@ struct RepositoryPackageDetailView: View {
             
             Section(header: Text("Mô tả").font(.headline)) {
                 Text(record.package.details ?? record.package.summary).font(.subheadline)
-                
-                if !record.package.screenshotURLs.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(Array(record.package.screenshotURLs.enumerated()), id: \.offset) { index, screenshotURL in
-                                RepositoryScreenshotPreview(url: screenshotURL, accessibilityLabel: "Preview \(index)")
-                            }
-                        }.padding(.vertical, 8)
-                    }.listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                }
             }
         }
         .listStyle(.insetGrouped)
@@ -236,26 +221,6 @@ struct RepositoryPackageIcon: View {
     private var placeholder: some View {
         Image(systemName: package.kind == .wallpaper ? "photo.fill" : "shippingbox.fill")
             .font(.system(size: size * 0.42, weight: .medium)).foregroundStyle(AppTheme.accent)
-    }
-}
-
-struct RepositoryRemoteImage: View {
-    @StateObject private var imageLoader = RepositoryImageLoader()
-    let url: URL
-    let cornerRadius: CGFloat
-    var body: some View {
-        Group {
-            if let image = imageLoader.image { Image(uiImage: image).resizable().scaledToFill() }
-            else if imageLoader.didFail { remoteImagePlaceholder(progressVisible: false) }
-            else { remoteImagePlaceholder(progressVisible: true) }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)).clipped()
-        .task(id: url) { await imageLoader.load(url: url, maximumPixelSize: 1_440) }
-    }
-    private func remoteImagePlaceholder(progressVisible: Bool) -> some View {
-        Rectangle().fill(Color(uiColor: .secondarySystemFill)).overlay {
-            if progressVisible { ProgressView() } else { Image(systemName: "photo").font(.title3).foregroundStyle(.tertiary) }
-        }
     }
 }
 
