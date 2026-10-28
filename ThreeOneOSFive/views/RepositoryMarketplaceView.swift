@@ -198,40 +198,28 @@ struct RepositoryPackageDetailView: View {
 
     var body: some View {
         List {
-            // HEADER GỌN HƠN
             Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(alignment: .center, spacing: 14) {
-                        RepositoryPackageIcon(package: record.package, size: 56)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(record.package.name).font(.headline)
-                            
-                            // Đưa Tương thích lên cùng dòng với tác giả, bỏ phiên bản
-                            HStack(spacing: 8) {
-                                Text(record.package.author).font(.subheadline).foregroundStyle(.secondary)
-                                
-                                if compatibility == .compatible {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "checkmark.circle.fill").font(.system(size: 12))
-                                        Text("Tương thích").font(.caption)
-                                    }.foregroundStyle(.green)
-                                }
-                            }
+                HStack(alignment: .top, spacing: 14) {
+                    RepositoryPackageIcon(package: record.package, size: 56)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(record.package.name).font(.headline)
+                        Text(record.package.author).font(.subheadline).foregroundStyle(.secondary)
+                        Text("Phiên bản \(record.package.version) · \(record.sourceName)").font(.caption).foregroundStyle(.secondary)
+                        if compatibility == .compatible {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Tương thích với thiết bị này")
+                            }.font(.caption).foregroundStyle(.green).padding(.top, 2)
                         }
-                        
-                        Spacer(minLength: 8)
-                        
-                        compactInstallButton
                     }
+                    Spacer(minLength: 8)
+                    compactInstallButton
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
             }
-            
             Section(header: Text("Mô tả").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
                 Text(record.package.details ?? record.package.summary).font(.subheadline).padding(.vertical, 4)
             }
-            
             if !record.package.screenshotURLs.isEmpty {
                 Section(header: Text("Ảnh xem trước").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -243,7 +231,6 @@ struct RepositoryPackageDetailView: View {
                     }.listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                 }
             }
-            
             Section(header: Text("Thông tin gói").font(.subheadline).foregroundStyle(.secondary).textCase(nil)) {
                 LabeledContent("Tác giả", value: record.package.author)
                 LabeledContent("Nguồn", value: record.sourceName)
@@ -270,7 +257,6 @@ struct RepositoryPackageDetailView: View {
     }
 }
 
-// XOÁ PHIÊN BẢN Ở DANH SÁCH REPO ĐỂ FULL CHIỀU NGANG
 struct RepositoryPackageRow: View {
     @Environment(\.appLanguage) private var language
     let record: RepositoryPackageRecord
@@ -294,16 +280,11 @@ struct RepositoryPackageIcon: View {
 
     var body: some View {
         Group {
-            if let image = imageLoader.image {
-                Image(uiImage: image).resizable().scaledToFill()
-            } else {
-                placeholder
-            }
+            if let image = imageLoader.image { Image(uiImage: image).resizable().scaledToFill() }
+            else { placeholder }
         }
-        .frame(width: size, height: size)
-        .background(Color(uiColor: .secondarySystemFill))
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
-        .accessibilityHidden(true)
+        .frame(width: size, height: size).background(Color(uiColor: .secondarySystemFill))
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)).accessibilityHidden(true)
         .task(id: package.iconURL) {
             guard let iconURL = package.iconURL else { return }
             await imageLoader.load(url: iconURL, maximumPixelSize: 240)
