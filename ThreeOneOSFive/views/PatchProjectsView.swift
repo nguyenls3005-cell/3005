@@ -86,31 +86,19 @@ struct PatchProjectsView: View {
                                 if isCleanerInstalled {
                                     NavigationLink { CleanerView() } label: { localTweakRow(title: "Dọn dẹp", icon: "sparkles") }
                                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                            Button(role: .destructive) {
-                                                withAnimation { isCleanerInstalled = false }
-                                            } label: {
-                                                Label("Xóa", systemImage: "trash")
-                                            }
+                                            Button(role: .destructive) { withAnimation { isCleanerInstalled = false } } label: { Label("Xóa", systemImage: "trash") }
                                         }
                                 }
                                 if isSupervisedInstalled {
-                                    NavigationLink { InstalledSupervisedTweakView() } label: { localTweakRow(title: "Chế độ giám sát", icon: "checkmark.shield.fill") }
+                                    NavigationLink { LocalSupervisedTweakView() } label: { localTweakRow(title: "Chế độ giám sát", icon: "checkmark.shield.fill") }
                                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                            Button(role: .destructive) {
-                                                withAnimation { isSupervisedInstalled = false }
-                                            } label: {
-                                                Label("Xóa", systemImage: "trash")
-                                            }
+                                            Button(role: .destructive) { withAnimation { isSupervisedInstalled = false } } label: { Label("Xóa", systemImage: "trash") }
                                         }
                                 }
                                 if isFootnoteInstalled {
-                                    NavigationLink { InstalledFootnoteTweakView() } label: { localTweakRow(title: "Chữ màn hình khóa", icon: "text.bubble.fill") }
+                                    NavigationLink { LocalFootnoteTweakView() } label: { localTweakRow(title: "Chữ màn hình khóa", icon: "text.bubble.fill") }
                                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                            Button(role: .destructive) {
-                                                withAnimation { isFootnoteInstalled = false }
-                                            } label: {
-                                                Label("Xóa", systemImage: "trash")
-                                            }
+                                            Button(role: .destructive) { withAnimation { isFootnoteInstalled = false } } label: { Label("Xóa", systemImage: "trash") }
                                         }
                                 }
                             }
@@ -187,11 +175,7 @@ struct PatchProjectsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.body.weight(.semibold)).foregroundStyle(.primary)
                 HStack(spacing: 4) {
-                    Image("anthumuc3105")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 12, height: 12)
-                    
+                    Image(systemName: "shippingbox.fill").font(.system(size: 10))
                     Text("Tính năng 3105").font(.system(size: 12, weight: .semibold))
                 }
                 .foregroundStyle(Color.orange.opacity(0.85))
