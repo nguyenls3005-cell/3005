@@ -1,33 +1,5 @@
 import SwiftUI
 import UIKit
-import UniformTypeIdentifiers
-
-class ConfigurationProfileManager {
-    static let shared = ConfigurationProfileManager()
-    private let plistPath = "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/CloudConfigurationDetails.plist"
-    
-    func readPlist() -> [String: Any]? {
-        guard let data = FileManager.default.contents(atPath: plistPath) else { return nil }
-        return try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
-    }
-    
-    func writePlist(_ dict: [String: Any]) -> Bool {
-        guard let data = try? PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0) else { return false }
-        return FileManager.default.createFile(atPath: plistPath, contents: data, attributes: nil)
-    }
-    
-    func updateFootnote(_ text: String) -> Bool {
-        guard var dict = readPlist() else { return false }
-        dict["Footnote"] = text
-        return writePlist(dict)
-    }
-    
-    func setSupervised(_ isEnabled: Bool) -> Bool {
-        guard var dict = readPlist() else { return false }
-        dict["IsSupervised"] = isEnabled
-        return writePlist(dict)
-    }
-}
 
 struct RepositorySourcesView: View {
     @Environment(\.appLanguage) private var language
@@ -39,21 +11,17 @@ struct RepositorySourcesView: View {
     var body: some View {
         NavigationStack {
             List {
-                if store.sources.isEmpty {
-                    Section { emptyState }
-                } else {
-                    Section {
-                        NavigationLink { Local3105RepoView() } label: {
-                            HStack(spacing: 12) {
-                                AppRowIcon(systemName: "shippingbox.fill")
-                                Text("Tính năng 3105").font(.body.weight(.semibold)).foregroundStyle(.primary)
-                            }.padding(.vertical, 4)
-                        }
-                        ForEach(store.sources) { source in
-                            NavigationLink { RepositorySourceDetailView(sourceID: source.id) } label: { RepositorySourceRow(source: source) }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) { store.removeSource(source) } label: { Label(language.text("repository.remove_source"), systemImage: "trash") }
-                            }
+                Section {
+                    NavigationLink { Local3105RepoView() } label: {
+                        HStack(spacing: 12) {
+                            AppRowIcon(systemName: "shippingbox.fill")
+                            Text("Tính năng 3105").font(.body.weight(.semibold)).foregroundStyle(.primary)
+                        }.padding(.vertical, 4)
+                    }
+                    ForEach(store.sources) { source in
+                        NavigationLink { RepositorySourceDetailView(sourceID: source.id) } label: { RepositorySourceRow(source: source) }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) { store.removeSource(source) } label: { Label(language.text("repository.remove_source"), systemImage: "trash") }
                         }
                     }
                 }
@@ -68,14 +36,6 @@ struct RepositorySourcesView: View {
             .sheet(isPresented: $showAddSource) { AddRepositorySourceView() }
         }
     }
-
-    private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "shippingbox.and.arrow.backward").font(.system(size: AppTheme.emptyIconSize, weight: .light)).foregroundStyle(AppTheme.accent)
-            Text(language.text("repository.no_sources_title")).font(.headline)
-            Button(language.text("repository.add_source")) { showAddSource = true }.buttonStyle(.bordered)
-        }.frame(maxWidth: .infinity).padding(.vertical, 48)
-    }
 }
 
 struct Local3105RepoView: View {
@@ -86,17 +46,14 @@ struct Local3105RepoView: View {
                     AppRowIcon(systemName: "shippingbox.fill", frameSize: 42)
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Tính năng 3105").font(.body.weight(.semibold))
-                        Text("Các tính năng hệ thống được tích hợp sẵn trong 3105, không tải từ mạng.").font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                        Text("3 gói").font(.caption).foregroundStyle(.secondary)
+                        Text("Các tính năng hệ thống được tích hợp sẵn trong 3105.").font(.caption).foregroundStyle(.secondary).lineLimit(2)
                     }
                 }.padding(.vertical, 3)
             }
 
             Section {
                 NavigationLink { LocalTweakListView(title: "Tất cả gói") } label: { LocalTagRow(name: "Tất cả gói", count: 3) }
-                NavigationLink { LocalTweakListView(title: "Dọn dẹp") } label: { LocalTagRow(name: "Dọn dẹp", count: 1) }
                 NavigationLink { LocalTweakListView(title: "iOS 27") } label: { LocalTagRow(name: "iOS 27", count: 2) }
-                NavigationLink { LocalTweakListView(title: "Tính năng 3105") } label: { LocalTagRow(name: "Tính năng 3105", count: 3) }
             } header: {
                 Text("Tag").font(.footnote.weight(.semibold)).foregroundStyle(.secondary).textCase(nil)
             }
@@ -121,10 +78,10 @@ struct LocalTweakListView: View {
     let title: String
     var body: some View {
         List {
-            if title == "Tất cả gói" || title == "Dọn dẹp" || title == "Tính năng 3105" {
+            if title == "Tất cả gói" || title == "Dọn dẹp" {
                 NavigationLink { LocalCleanerTweakView() } label: { TweakRow(title: "Dọn dẹp", desc: "Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.", icon: "sparkles") }
             }
-            if title == "Tất cả gói" || title == "iOS 27" || title == "Tính năng 3105" {
+            if title == "Tất cả gói" || title == "iOS 27" {
                 NavigationLink { LocalSupervisedTweakView() } label: { TweakRow(title: "Chế độ giám sát", desc: "Bật hoặc tắt IsSupervised trên thiết bị iOS 27.", icon: "checkmark.shield.fill") }
                 NavigationLink { LocalFootnoteTweakView() } label: { TweakRow(title: "Chữ màn hình khóa", desc: "Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.", icon: "text.bubble.fill") }
             }
@@ -156,7 +113,6 @@ struct LocalCleanerTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Dọn dẹp").font(.title3.bold())
                         Text("Kiểm tra và xoá bộ nhớ đệm, tệp tạm của ứng dụng.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Phiên bản 1.0.0").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 Button { withAnimation { isInstalled = true } } label: {
@@ -165,23 +121,14 @@ struct LocalCleanerTweakView: View {
             }
             Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
-                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
                 HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
-                HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
-                HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
-            } header: {
-                Text("Thông tin gói").font(.headline)
-            }
+            } header: { Text("Thông tin gói").font(.headline) }
         }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct LocalSupervisedTweakView: View {
     @AppStorage("isSupervisedInstalled") var isInstalled = false
-    @State private var isSupervisedOn = ConfigurationProfileManager.shared.readPlist()?["IsSupervised"] as? Bool ?? false
-    @State private var showAlert = false
-    @State private var alertMsg = ""
-
     var body: some View {
         List {
             Section {
@@ -190,46 +137,25 @@ struct LocalSupervisedTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Chế độ giám sát").font(.title3.bold())
                         Text("Bật hoặc tắt IsSupervised trên thiết bị iOS 27.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            if isInstalled {
-                Section { 
-                    Toggle("Chế độ giám sát", isOn: $isSupervisedOn)
-                        .onChange(of: isSupervisedOn) { newValue in
-                            let success = ConfigurationProfileManager.shared.setSupervised(newValue)
-                            alertMsg = success ? "Đã cập nhật! Vui lòng khởi động lại thiết bị." : "Lỗi: Không thể ghi tệp hệ thống."
-                            showAlert = true
-                        }
-                } footer: { Text("Thay đổi trực tiếp giá trị IsSupervised.") }
-            }
             Section {
                 Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
-            } header: {
-                Text("Mô tả").font(.headline)
-            }
+            } header: { Text("Mô tả").font(.headline) }
             Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
-                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
                 HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
-            } header: {
-                Text("Thông tin gói").font(.headline)
-            }
+            } header: { Text("Thông tin gói").font(.headline) }
         }.navigationTitle("Chế độ giám sát").navigationBarTitleDisplayMode(.inline)
-        .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
     }
 }
 
 struct LocalFootnoteTweakView: View {
     @AppStorage("isFootnoteInstalled") var isInstalled = false
-    @State private var inputText = (ConfigurationProfileManager.shared.readPlist()?["Footnote"] as? String) ?? ""
-    @State private var showAlert = false
-    @State private var alertMsg = ""
-
     var body: some View {
         List {
             Section {
@@ -238,37 +164,20 @@ struct LocalFootnoteTweakView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Chữ màn hình khóa").font(.title3.bold())
                         Text("Thêm hoặc chỉnh sửa Footnote trên màn hình khóa iOS 27.").font(.subheadline).foregroundStyle(.secondary)
-                        Text("3105 · Tính năng 3105").font(.caption).foregroundStyle(.secondary)
                     }
                 }.padding(.vertical, 8)
                 Button { withAnimation { isInstalled = true } } label: {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            if isInstalled {
-                Section {
-                    TextField("Nhập chữ hiển thị", text: $inputText, axis: .vertical).lineLimit(3)
-                    Button {
-                        let success = ConfigurationProfileManager.shared.updateFootnote(inputText)
-                        alertMsg = success ? "Đã lưu! Vui lòng khởi động lại thiết bị." : "Lỗi: Không thể ghi tệp hệ thống."
-                        showAlert = true
-                    } label: {
-                        Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(AppTheme.accent).clipShape(Capsule())
-                    }.buttonStyle(.plain)
-                } header: {
-                    Text("Nội dung Footnote")
-                } footer: {
-                    Text("Sau khi áp dụng, hãy khởi động lại thiết bị để thay đổi có hiệu lực.")
-                }
-            }
+            Section {
+                Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
+            } header: { Text("Mô tả").font(.headline) }
             Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
-                HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
-            } header: {
-                Text("Thông tin gói").font(.headline)
-            }
+                HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
+            } header: { Text("Thông tin gói").font(.headline) }
         }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
-        .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
     }
 }
 
