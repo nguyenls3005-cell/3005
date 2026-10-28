@@ -50,7 +50,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Dialer")
                 } footer: {
-                    Text("Mở Điện thoại > Bàn phím và bấm một phím trước khi lấy dữ liệu. 3105 chỉ nhận diện phím và chế độ sáng/tối; tệp thường hoặc Chữ đậm sẽ được xử lý tự động.")
+                    Text("Mở Điện thoại > Bàn phím và bấm một phím trước khi lấy dữ liệu. 3105 chỉ nhận diện phím và chế độ sáng/tối.")
                 }
 
                 Section(language.text("common.device")) {
@@ -73,11 +73,6 @@ struct SettingsView: View {
                 } footer: {
                     Text(language.text("settings.supported_versions_footer"))
                 }
-
-                Section(language.text("settings.social_media")) {
-                    creditsRow(name: "GitHub", role: language.text("social.github_role"), url: "https://github.com/YangJiiii/3105")
-                    creditsRow(name: "Cộng Đồng IOSVN", role: language.text("social.iosvn_role"), url: "https://t.me/ioscrackvn")
-                }
             }
             .tint(AppTheme.accent)
             .navigationTitle(language.text("settings.title"))
@@ -92,21 +87,5 @@ struct SettingsView: View {
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "AppReleaseDisplayVersion") as? String ?? "2.0"
-    }
-
-    @ViewBuilder
-    private func creditsRow(name: String, role: String, url: String) -> some View {
-        if let destination = URL(string: url) {
-            Link(destination: destination) {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(name).font(.headline).foregroundStyle(.primary)
-                        Text(role).font(.caption).foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: "arrow.up.right").font(.system(size: 14, weight: .medium)).foregroundStyle(AppTheme.accent).frame(width: 28, height: 28)
-                }.contentShape(Rectangle())
-            }
-        }
     }
 }
