@@ -92,11 +92,13 @@ struct Local3105RepoView: View {
                 }.padding(.vertical, 3)
             }
 
-            Section(header: Text("Tag").font(.footnote.weight(.semibold)).foregroundStyle(.secondary).textCase(nil)) {
+            Section {
                 NavigationLink { LocalTweakListView(title: "Tất cả gói") } label: { LocalTagRow(name: "Tất cả gói", count: 3) }
                 NavigationLink { LocalTweakListView(title: "Dọn dẹp") } label: { LocalTagRow(name: "Dọn dẹp", count: 1) }
                 NavigationLink { LocalTweakListView(title: "iOS 27") } label: { LocalTagRow(name: "iOS 27", count: 2) }
                 NavigationLink { LocalTweakListView(title: "Tính năng 3105") } label: { LocalTagRow(name: "Tính năng 3105", count: 3) }
+            } header: {
+                Text("Tag").font(.footnote.weight(.semibold)).foregroundStyle(.secondary).textCase(nil)
             }
         }.listStyle(.insetGrouped).navigationTitle("Tính năng 3105").navigationBarTitleDisplayMode(.inline)
     }
@@ -161,12 +163,14 @@ struct LocalCleanerTweakView: View {
                     Text(isInstalled ? "Đã cài" : "Cài đặt").font(.headline).foregroundStyle(isInstalled ? Color.secondary : Color.white).frame(maxWidth: .infinity).padding(.vertical, 14).background(isInstalled ? Color.gray.opacity(0.2) : AppTheme.accent).clipShape(Capsule())
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
-            Section(header: Text("Thông tin gói").font(.headline)) {
+            Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
                 HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
                 HStack { Text("Danh mục"); Spacer(); Text("Tính năng hệ thống").foregroundStyle(.secondary) }
                 HStack { Text("iOS hỗ trợ"); Spacer(); Text("iOS 27").foregroundStyle(.secondary) }
+            } header: {
+                Text("Thông tin gói").font(.headline)
             }
         }.navigationTitle("Dọn dẹp").navigationBarTitleDisplayMode(.inline)
     }
@@ -203,13 +207,17 @@ struct LocalSupervisedTweakView: View {
                         }
                 } footer: { Text("Thay đổi trực tiếp giá trị IsSupervised.") }
             }
-            Section(header: Text("Mô tả").font(.headline)) {
+            Section {
                 Text("Giữ nguyên dữ liệu cấu hình hiện có và thay đổi giá trị Boolean IsSupervised.").font(.subheadline)
+            } header: {
+                Text("Mô tả").font(.headline)
             }
-            Section(header: Text("Thông tin gói").font(.headline)) {
+            Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
                 HStack { Text("Tác giả"); Spacer(); Text("3105").foregroundStyle(.secondary) }
+            } header: {
+                Text("Thông tin gói").font(.headline)
             }
         }.navigationTitle("Chế độ giám sát").navigationBarTitleDisplayMode(.inline)
         .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
@@ -238,7 +246,7 @@ struct LocalFootnoteTweakView: View {
                 }.buttonStyle(.plain).disabled(isInstalled)
             }
             if isInstalled {
-                Section(header: Text("Nội dung Footnote")) {
+                Section {
                     TextField("Nhập chữ hiển thị", text: $inputText, axis: .vertical).lineLimit(3)
                     Button {
                         let success = ConfigurationProfileManager.shared.updateFootnote(inputText)
@@ -247,11 +255,17 @@ struct LocalFootnoteTweakView: View {
                     } label: {
                         Text("Lưu Footnote").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 12).background(AppTheme.accent).clipShape(Capsule())
                     }.buttonStyle(.plain)
-                } footer: { Text("Sau khi áp dụng, hãy khởi động lại thiết bị để thay đổi có hiệu lực.") }
+                } header: {
+                    Text("Nội dung Footnote")
+                } footer: {
+                    Text("Sau khi áp dụng, hãy khởi động lại thiết bị để thay đổi có hiệu lực.")
+                }
             }
-            Section(header: Text("Thông tin gói").font(.headline)) {
+            Section {
                 HStack { Text("Phiên bản"); Spacer(); Text("1.0.0").foregroundStyle(.secondary) }
                 HStack { Text("Nguồn"); Spacer(); Text("Tính năng 3105").foregroundStyle(.secondary) }
+            } header: {
+                Text("Thông tin gói").font(.headline)
             }
         }.navigationTitle("Chữ màn hình khóa").navigationBarTitleDisplayMode(.inline)
         .alert(isPresented: $showAlert) { Alert(title: Text("Thông báo"), message: Text(alertMsg), dismissButton: .default(Text("OK"))) }
