@@ -37,18 +37,6 @@ struct SettingsView: View {
                     Text(language.text("settings.developer_mode_footer"))
                 }
 
-                if WallpaperFeatureSupportPolicy.isSupported(major: AppInfo.versionTuple.major) {
-                    Section {
-                        NavigationLink { WallpaperResetSettingsView() } label: {
-                            Label(language.text("wallpaper.reset"), systemImage: "arrow.counterclockwise")
-                        }
-                    } header: {
-                        Text(language.text("tab.wallpapers"))
-                    } footer: {
-                        Text(language.text("wallpaper.reset_settings_footer"))
-                    }
-                }
-
                 Section {
                     HStack {
                         Label("Lấy dữ liệu Dialer", systemImage: "phone.fill")
@@ -62,7 +50,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Dialer")
                 } footer: {
-                    Text("Mở Điện thoại > Bàn phím và bấm một phím trước khi lấy dữ liệu. 3105 chỉ nhận diện phím và chế độ sáng/tối.")
+                    Text("Mở Điện thoại > Bàn phím và bấm một phím trước khi lấy dữ liệu. 3105 chỉ nhận diện phím và chế độ sáng/tối; tệp thường hoặc Chữ đậm sẽ được xử lý tự động.")
                 }
 
                 Section(language.text("common.device")) {
